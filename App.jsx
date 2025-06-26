@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
   NavigationContainer,
   DefaultTheme,
@@ -8,21 +7,26 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainNavigation from './src/Navigation/MainNavigation';
 import { ChatProvider } from './src/context/ChatContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
 import eventBus from './src/utils/eventBus';
-import { ROUTES } from './src/constants';
-import { Animated, Text } from 'react-native';
-import Toast from 'react-native-toast-message';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor, store } from './src/redux/store';
+import Toast from 'react-native-toast-message';
+import { StatusBar } from 'react-native';
+import { setTheme } from './src/redux/slice/appSettingsSlice';
+import { useEffect } from 'react';
 
 const Stack = createNativeStackNavigator();
-const THEME_KEY = 'APP_THEME';
 
-function RootStack({ theme, toggleTheme }) {
+function RootStack() {
+  
   const theme = useSelector(state => state.appSettings.theme);
+  const dispatch = useDispatch();
+
+  const toggleTheme = () => {
+    const next = theme === 'light' ? 'dark' : 'light';
+    dispatch(setTheme(next));
+  };
 
   return (
     <ChatProvider>
@@ -31,29 +35,9 @@ function RootStack({ theme, toggleTheme }) {
   );
 }
 
-export default function App() {
-  const [theme, setTheme] = useState('light');
+function AppContent() {
   const navRef = useNavigationContainerRef();
-  const [notif, setNotif] = useState({
-    visible: false,
-    message: '',
-    sender: '',
-    chat: null,
-  });
-
-  useEffect(() => {
-    const storedTheme = async () => {
-      const value = await AsyncStorage.getItem(THEME_KEY);
-      if (value) setTheme(value);
-    };
-    storedTheme();
-  }, []);
-
-  const toggleTheme = async () => {
-    const next = theme === 'light' ? 'dark' : 'light';
-    setTheme(next);
-    await AsyncStorage.setItem(THEME_KEY, next);
-  };
+  const theme = useSelector(state => state.appSettings.theme);
 
   const navTheme = theme === 'dark' ? DarkTheme : DefaultTheme;
 
@@ -66,7 +50,6 @@ export default function App() {
         position: 'top',
       });
       console.log('Received event:', message);
-      setNotif({ visible: true, message, sender, chat });
     };
 
     eventBus.on('notify', handler);
@@ -75,14 +58,22 @@ export default function App() {
 
   return (
     <>
-      <Provider store={store}>
-        <PersistGate persistor={persistor}>
-          <NavigationContainer ref={navRef} theme={navTheme}>
-            <RootStack theme={theme} toggleTheme={toggleTheme} />
-          </NavigationContainer>
-        </PersistGate>
-      </Provider>
-      <Toast></Toast>
+      
+     
+      <NavigationContainer ref={navRef} theme={navTheme}>
+        <RootStack />
+      </NavigationContainer>
+      <Toast />
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <PersistGate persistor={persistor}>
+        <AppContent />
+      </PersistGate>
+    </Provider>
   );
 }

@@ -140,34 +140,35 @@ const Chat = ({ route, theme, toggleTheme }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={90}
     >
-      {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.card }]}>
-        <Image source={{ uri: chat.avatar }} style={styles.avatar} />
+        <Image source={chat?.avatar} style={styles.avatar} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.headerText, { color: colors.text }]}>
             {chat.name}
           </Text>
           <Text
             style={{
-              fontSize: 12,
-              color: isOnline ? 'green' : colors.secondaryText,
+              fontSize: 13,
+              color: typing
+                ? '#FF9500'
+                : isOnline
+                ? 'green'
+                : colors.secondaryText,
+              fontWeight: '500',
             }}
           >
-            {isOnline ? (!typing ? 'Online' : 'Typing...') : 'Offline'}
+            {typing ? 'Typing...' : isOnline ? 'Online' : 'Offline'}
           </Text>
         </View>
-        <TouchableOpacity onPress={toggleTheme}>
-          <Text style={{ color: colors.bubbleMe, marginLeft: 12 }}>
-            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
-          </Text>
-        </TouchableOpacity>
       </View>
 
-      {/* Messages */}
       <FlatList
         ref={scrollRef}
         data={messages}
         keyExtractor={item => item.id}
+        onContentSizeChange={() =>
+          scrollRef.current?.scrollToEnd({ animated: true })
+        }
         renderItem={({ item, index }) => {
           const isMe = item.sender === 'me';
           return (
@@ -177,7 +178,9 @@ const Chat = ({ route, theme, toggleTheme }) => {
                 {
                   backgroundColor: isMe ? colors.bubbleMe : colors.bubbleOther,
                   alignSelf: isMe ? 'flex-end' : 'flex-start',
-                  marginBottom: index === messages.length - 1 && 70,
+                  marginBottom: index === messages.length - 1 ? 80 : 0,
+                  borderTopLeftRadius: isMe ? 18 : 4,
+                  borderTopRightRadius: isMe ? 4 : 18,
                 },
               ]}
             >
@@ -191,9 +194,6 @@ const Chat = ({ route, theme, toggleTheme }) => {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Typing Indicator */}
-
-      {/* Input */}
       <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
         <TextInput
           value={input}
@@ -228,65 +228,75 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    elevation: 3,
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 0.5,
     borderColor: '#ccc',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    elevation: 2,
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginRight: 12,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 14,
   },
   headerText: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '600',
   },
   chatList: {
     padding: 12,
-    paddingBottom: 80,
+    paddingBottom: 90,
   },
   messageBubble: {
     maxWidth: '75%',
-    padding: 12,
-    marginVertical: 6,
-    borderRadius: 18,
-  },
-  typingText: {
-    fontStyle: 'italic',
-    marginLeft: 14,
-    marginBottom: 4,
-    fontSize: 13,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginVertical: 5,
+    borderRadius: 20,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
+    padding: 10,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
     borderTopWidth: 0.5,
     borderColor: '#ccc',
+    backgroundColor: '#fff',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: -1 },
+    shadowRadius: 3,
   },
   input: {
     flex: 1,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 25,
+    backgroundColor: '#f1f1f1',
     fontSize: 15,
   },
   sendButton: {
     marginLeft: 8,
+    paddingHorizontal: 18,
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    backgroundColor: '#007AFF',
+    borderRadius: 25,
+    elevation: 2,
   },
   sendText: {
     color: '#fff',
     fontWeight: '600',
+    fontSize: 15,
   },
 });

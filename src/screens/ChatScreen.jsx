@@ -8,12 +8,14 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { ROUTES } from '../constants';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import {  useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { toggleFavourite } from '../redux/slice/appSettingsSlice';
+import { SakuraHaruno, tanjiro, tarutoUzumaki } from '../assets/images/imagesListing';
 
 const CHAT_LIST_KEY = 'CHAT_LIST';
-const FAVORITE_CHAT_IDS_KEY = 'FAVORITE_CHAT_IDS';
 
 const lightColors = {
   background: '#F9F9F9',
@@ -34,96 +36,55 @@ const darkColors = {
 };
 
 const ChatScreen = ({ navigation, theme, toggleTheme }) => {
-   const typing = useSelector(state => state.appSettings.userData.typing);
+  const dispatch = useDispatch();
+  const typing = useSelector(state => state.appSettings.userData.typing);
   const userId = useSelector(state => state.appSettings.userData.userId);
+  const favourites = useSelector(state => state.appSettings.favourites);
 
-
-  
   const [chats, setChats] = useState([]);
-  const [favorites, setFavorites] = useState([]);
-  
+
   const colors = theme === 'dark' ? darkColors : lightColors;
 
   const defaultChats = [
     {
       id: '1',
-      name: 'John Doe',
-      lastMessage: 'Hey there!',
-      avatar: 'https://randomuser.me/api/portraits/men/11.jpg',
+      name: 'Naruto Uzumaki',
+      lastMessage: 'Believe it!',
+      avatar: tarutoUzumaki,
     },
     {
       id: '2',
-      name: 'Jane Smith',
-      lastMessage: 'Let’s catch up tomorrow.',
-      avatar: 'https://randomuser.me/api/portraits/women/22.jpg',
+      name: 'Sakura Haruno',
+      lastMessage: 'You’re so annoying!',
+      avatar: SakuraHaruno,
     },
     {
       id: '3',
-      name: 'Ali Raza',
-      lastMessage: 'Okay, I’ll send it.',
-      avatar: 'https://randomuser.me/api/portraits/men/33.jpg',
+      name: 'Tanjiro Kamado',
+      lastMessage: 'Sorry I’m late…',
+      avatar: tanjiro,
     },
   ];
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const chatData = await AsyncStorage.getItem(CHAT_LIST_KEY);
-        const favoriteData = await AsyncStorage.getItem(FAVORITE_CHAT_IDS_KEY);
+  
 
-        if (chatData) {
-          setChats(JSON.parse(chatData));
-        } else {
-          setChats(defaultChats);
-          await AsyncStorage.setItem(
-            CHAT_LIST_KEY,
-            JSON.stringify(defaultChats),
-          );
-        }
-
-        if (favoriteData) {
-          setFavorites(JSON.parse(favoriteData));
-        }
-      } catch (err) {
-        console.error('Error loading chat or favorites:', err);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  const toggleFavorite = async id => {
-    try {
-      let updated = [...favorites];
-      if (updated.includes(id)) {
-        updated = updated.filter(favId => favId !== id);
-      } else {
-        updated.push(id);
-      }
-
-      setFavorites(updated);
-      await AsyncStorage.setItem(
-        FAVORITE_CHAT_IDS_KEY,
-        JSON.stringify(updated),
-      );
-    } catch (err) {
-      console.error('Failed to update favorites:', err);
-    }
+  const toggleFavorite = id => {
+    dispatch(toggleFavourite(id));
   };
 
   const renderItem = ({ item }) => {
-    const isFavorite = favorites.includes(item.id);
+    const isFavorite = favourites.includes(item.id);
 
     return (
       <TouchableOpacity
         style={[styles.chatItem, { backgroundColor: colors.card }]}
         onPress={() => navigation.navigate(ROUTES.CHAT, { chat: item })}
       >
-        <Image source={{ uri: item.avatar }} style={styles.avatar} />
+        <Image source={item.avatar} style={styles.avatar} />
         <View style={styles.chatContent}>
           <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
           <Text style={[styles.message, { color: colors.secondaryText }]}>
-            {typing&&userId===item?.id ? 'typing...' : item.lastMessage}
+            {typing && userId === item.id ? 'typing...' : item.lastMessage}
           </Text>
         </View>
         <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
@@ -141,16 +102,10 @@ const ChatScreen = ({ navigation, theme, toggleTheme }) => {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Chats</Text>
-        <TouchableOpacity onPress={toggleTheme}>
-          <Text style={[styles.themeToggle, { color: colors.text }]}>
-            {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
+        </View>
 
       <FlatList
-        data={chats}
+        data={defaultChats}
         keyExtractor={item => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
@@ -166,54 +121,58 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    elevation: 3,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
   },
-  themeToggle: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
   list: {
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   chatItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 6,
-    borderRadius: 12,
-    marginHorizontal: 10,
+    paddingVertical: 14,
+    marginBottom: 8,
+    marginHorizontal: 14,
+    backgroundColor: '#fff',
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.06,
     shadowRadius: 4,
-    elevation: 2,
-    justifyContent: 'space-between',
+    elevation: 3,
   },
   avatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    marginRight: 12,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 14,
+    borderWidth: 2,
+    borderColor: '#007AFF22',
   },
   chatContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 4,
   },
   name: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
   },
   message: {
     fontSize: 14,
     marginTop: 4,
+    fontStyle: 'italic',
   },
 });
