@@ -14,14 +14,16 @@ import eventBus from './src/utils/eventBus';
 import { ROUTES } from './src/constants';
 import { Animated, Text } from 'react-native';
 import Toast from 'react-native-toast-message';
-
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistor, store } from './src/redux/store';
 
 const Stack = createNativeStackNavigator();
 const THEME_KEY = 'APP_THEME';
 
-
-
 function RootStack({ theme, toggleTheme }) {
+  const theme = useSelector(state => state.appSettings.theme);
+
   return (
     <ChatProvider>
       <MainNavigation theme={theme} toggleTheme={toggleTheme} />
@@ -55,7 +57,6 @@ export default function App() {
 
   const navTheme = theme === 'dark' ? DarkTheme : DefaultTheme;
 
-  
   useEffect(() => {
     const handler = ({ message, sender, chat }) => {
       Toast.show({
@@ -72,14 +73,16 @@ export default function App() {
     return () => eventBus.off('notify', handler);
   }, []);
 
-  
-
   return (
     <>
-      <NavigationContainer ref={navRef} theme={navTheme}>
-        <RootStack theme={theme} toggleTheme={toggleTheme} />
-      </NavigationContainer>
-    <Toast></Toast>
+      <Provider store={store}>
+        <PersistGate persistor={persistor}>
+          <NavigationContainer ref={navRef} theme={navTheme}>
+            <RootStack theme={theme} toggleTheme={toggleTheme} />
+          </NavigationContainer>
+        </PersistGate>
+      </Provider>
+      <Toast></Toast>
     </>
   );
 }

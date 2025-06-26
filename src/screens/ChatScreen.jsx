@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { ROUTES } from '../constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {  useSelector } from 'react-redux';
 
 const CHAT_LIST_KEY = 'CHAT_LIST';
 const FAVORITE_CHAT_IDS_KEY = 'FAVORITE_CHAT_IDS';
@@ -33,9 +34,14 @@ const darkColors = {
 };
 
 const ChatScreen = ({ navigation, theme, toggleTheme }) => {
+   const typing = useSelector(state => state.appSettings.userData.typing);
+  const userId = useSelector(state => state.appSettings.userData.userId);
+
+
+  
   const [chats, setChats] = useState([]);
   const [favorites, setFavorites] = useState([]);
-
+  
   const colors = theme === 'dark' ? darkColors : lightColors;
 
   const defaultChats = [
@@ -69,7 +75,10 @@ const ChatScreen = ({ navigation, theme, toggleTheme }) => {
           setChats(JSON.parse(chatData));
         } else {
           setChats(defaultChats);
-          await AsyncStorage.setItem(CHAT_LIST_KEY, JSON.stringify(defaultChats));
+          await AsyncStorage.setItem(
+            CHAT_LIST_KEY,
+            JSON.stringify(defaultChats),
+          );
         }
 
         if (favoriteData) {
@@ -83,17 +92,20 @@ const ChatScreen = ({ navigation, theme, toggleTheme }) => {
     loadData();
   }, []);
 
-  const toggleFavorite = async (id) => {
+  const toggleFavorite = async id => {
     try {
       let updated = [...favorites];
       if (updated.includes(id)) {
-        updated = updated.filter((favId) => favId !== id);
+        updated = updated.filter(favId => favId !== id);
       } else {
         updated.push(id);
       }
 
       setFavorites(updated);
-      await AsyncStorage.setItem(FAVORITE_CHAT_IDS_KEY, JSON.stringify(updated));
+      await AsyncStorage.setItem(
+        FAVORITE_CHAT_IDS_KEY,
+        JSON.stringify(updated),
+      );
     } catch (err) {
       console.error('Failed to update favorites:', err);
     }
@@ -111,7 +123,7 @@ const ChatScreen = ({ navigation, theme, toggleTheme }) => {
         <View style={styles.chatContent}>
           <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
           <Text style={[styles.message, { color: colors.secondaryText }]}>
-            {item.lastMessage}
+            {typing&&userId===item?.id ? 'typing...' : item.lastMessage}
           </Text>
         </View>
         <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
@@ -127,7 +139,6 @@ const ChatScreen = ({ navigation, theme, toggleTheme }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Custom Header */}
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Chats</Text>
         <TouchableOpacity onPress={toggleTheme}>
@@ -137,10 +148,10 @@ const ChatScreen = ({ navigation, theme, toggleTheme }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Chat List */}
+
       <FlatList
         data={chats}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
       />

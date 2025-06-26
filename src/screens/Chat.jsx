@@ -14,8 +14,13 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import eventBus from '../utils/eventBus';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUserData } from '../redux/slice/appSettingsSlice';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
@@ -41,11 +46,13 @@ const darkColors = {
 
 const Chat = ({ route, theme, toggleTheme }) => {
   const { chat } = route.params;
+  const typing = useSelector(state => state.appSettings.userData.typing);
   const scrollRef = useRef(null);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
+
   const [isOnline, setIsOnline] = useState(true);
+  const dispatch = useDispatch();
 
   const colors = theme === 'dark' ? darkColors : lightColors;
   const STORAGE_KEY = `CHAT_MESSAGES_${chat.id}`;
@@ -62,7 +69,10 @@ const Chat = ({ route, theme, toggleTheme }) => {
             { id: '2', text: 'Hi! How are you?', sender: 'me' },
           ];
           setMessages(defaultMessages);
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMessages));
+          await AsyncStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(defaultMessages),
+          );
         }
       } catch (err) {
         console.error('Failed to load messages:', err);
@@ -72,7 +82,7 @@ const Chat = ({ route, theme, toggleTheme }) => {
     loadMessages();
   }, []);
 
-  const saveMessages = async (updatedMessages) => {
+  const saveMessages = async updatedMessages => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedMessages));
     } catch (err) {
@@ -81,6 +91,8 @@ const Chat = ({ route, theme, toggleTheme }) => {
   };
 
   const handleSend = () => {
+    dispatch(setUserData({ typing: true, userId: chat?.id }));
+
     if (input.trim() === '') return;
 
     const newMessage = {
@@ -94,8 +106,6 @@ const Chat = ({ route, theme, toggleTheme }) => {
     setMessages(updatedMessages);
     saveMessages(updatedMessages);
     setInput('');
-
-    setIsTyping(true);
 
     setTimeout(() => {
       const fakeReply = {
@@ -114,8 +124,8 @@ const Chat = ({ route, theme, toggleTheme }) => {
         chat,
       });
 
-      setIsTyping(false);
-    }, 2000);
+      dispatch(setUserData({ typing: false, userId: chat?.id }));
+    }, 5000);
   };
 
   useEffect(() => {
@@ -134,9 +144,16 @@ const Chat = ({ route, theme, toggleTheme }) => {
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <Image source={{ uri: chat.avatar }} style={styles.avatar} />
         <View style={{ flex: 1 }}>
-          <Text style={[styles.headerText, { color: colors.text }]}>{chat.name}</Text>
-          <Text style={{ fontSize: 12, color: isOnline ? 'green' : colors.secondaryText }}>
-            {isOnline ? 'Online' : 'Offline'}
+          <Text style={[styles.headerText, { color: colors.text }]}>
+            {chat.name}
+          </Text>
+          <Text
+            style={{
+              fontSize: 12,
+              color: isOnline ? 'green' : colors.secondaryText,
+            }}
+          >
+            {isOnline ? (!typing ? 'Online' : 'Typing...') : 'Offline'}
           </Text>
         </View>
         <TouchableOpacity onPress={toggleTheme}>
@@ -150,8 +167,8 @@ const Chat = ({ route, theme, toggleTheme }) => {
       <FlatList
         ref={scrollRef}
         data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item,index }) => {
+        keyExtractor={item => item.id}
+        renderItem={({ item, index }) => {
           const isMe = item.sender === 'me';
           return (
             <View
@@ -160,12 +177,13 @@ const Chat = ({ route, theme, toggleTheme }) => {
                 {
                   backgroundColor: isMe ? colors.bubbleMe : colors.bubbleOther,
                   alignSelf: isMe ? 'flex-end' : 'flex-start',
-                  marginBottom:index===messages.length-1&&70,
-                  
+                  marginBottom: index === messages.length - 1 && 70,
                 },
               ]}
             >
-              <Text style={{ color: isMe ? '#fff' : colors.text }}>{item.text}</Text>
+              <Text style={{ color: isMe ? '#fff' : colors.text }}>
+                {item.text}
+              </Text>
             </View>
           );
         }}
@@ -174,11 +192,6 @@ const Chat = ({ route, theme, toggleTheme }) => {
       />
 
       {/* Typing Indicator */}
-      {isTyping && (
-        <Text style={[styles.typingText, { color: colors.secondaryText }]}>
-          {chat.name} is typing...
-        </Text>
-      )}
 
       {/* Input */}
       <View style={[styles.inputContainer, { backgroundColor: colors.card }]}>
@@ -195,7 +208,10 @@ const Chat = ({ route, theme, toggleTheme }) => {
             },
           ]}
         />
-        <TouchableOpacity onPress={handleSend} style={[styles.sendButton, { backgroundColor: colors.bubbleMe }]}>
+        <TouchableOpacity
+          onPress={handleSend}
+          style={[styles.sendButton, { backgroundColor: colors.bubbleMe }]}
+        >
           <Text style={styles.sendText}>Send</Text>
         </TouchableOpacity>
       </View>
