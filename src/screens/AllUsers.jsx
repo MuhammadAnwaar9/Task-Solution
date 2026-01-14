@@ -5,8 +5,6 @@ import {
   FlatList,
   Image,
   Modal,
-  SafeAreaView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -16,6 +14,7 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
+import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const lightColors = {
   bg: '#F6F8FC',
@@ -201,10 +200,7 @@ const AllUsers = ({ theme = 'light' }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar
-        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-      />
+    <View style={styles.safe}>
       <View style={styles.container}>
         <View style={styles.header}>
           <View>
@@ -283,7 +279,7 @@ const AllUsers = ({ theme = 'light' }) => {
           onClose={closeUser}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -522,7 +518,7 @@ const Field = ({ label, value, colors }) => {
 const makeStyles = c =>
   StyleSheet.create({
     safe: { flex: 1, backgroundColor: c.bg },
-    container: { flex: 1, paddingHorizontal: 16, paddingTop: 12 },
+    container: { flex: 1, paddingHorizontal: 16, marginTop: hp(8) },
 
     header: {
       flexDirection: 'row',

@@ -58,12 +58,10 @@ function AppContent() {
 
   return (
     <>
-      {/* <SafeAreaView style={{ flex: 1 }}> */}
-        <NavigationContainer ref={navRef} theme={navTheme}>
-          <RootStack />
-        </NavigationContainer>
-        <Toast />
-      {/* </SafeAreaView> */}
+      <NavigationContainer ref={navRef} theme={navTheme}>
+        <RootStack />
+      </NavigationContainer>
+      <Toast />
     </>
   );
 }
