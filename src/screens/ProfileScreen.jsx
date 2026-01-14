@@ -6,36 +6,38 @@ import {
   Image,
   TouchableOpacity,
   Switch,
-  Dimensions,
 } from 'react-native';
 import { anwaarDev } from '../assets/images/imagesListing';
-
-
-const { width } = Dimensions.get('window');
-
+import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
 const ProfileScreen = ({ theme, toggleTheme }) => {
   const isDark = theme === 'dark';
 
   const colors = {
-    bg: isDark ? '#0D0D0D' : '#EFEFF4',
-    card: isDark ? '#1C1C1E' : '#FFFFFF',
+    bg: isDark ? '#0B1220' : '#EFEFF4',
+    card: isDark ? '#14213A' : '#FFFFFF',
     text: isDark ? '#F9F9F9' : '#1A1A1A',
     subText: isDark ? '#999' : '#555',
     primary: '#007AFF',
-    border: isDark ? '#333' : '#E2E2E2',
+    border: isDark ? '#22314D' : '#E2E2E2',
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
-      {/* Profile Card */}
-      <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View
+        style={[
+          styles.profileCard,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
         <View style={styles.avatarWrapper}>
           <View style={styles.avatarRing}>
             <Image source={anwaarDev} style={styles.avatar} />
           </View>
         </View>
         <Text style={[styles.name, { color: colors.text }]}>Anwaar Dev</Text>
-        <Text style={[styles.email, { color: colors.subText }]}>anwaardev9@email.com</Text>
+        <Text style={[styles.email, { color: colors.subText }]}>
+          anwaardev9@email.com
+        </Text>
 
         <TouchableOpacity
           activeOpacity={0.8}
@@ -45,11 +47,19 @@ const ProfileScreen = ({ theme, toggleTheme }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Settings Section */}
-      <View style={[styles.settingsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Preferences</Text>
+      <View
+        style={[
+          styles.settingsCard,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          Preferences
+        </Text>
         <View style={styles.settingRow}>
-          <Text style={[styles.settingText, { color: colors.text }]}>Dark Mode</Text>
+          <Text style={[styles.settingText, { color: colors.text }]}>
+            Dark Mode
+          </Text>
           <Switch value={isDark} onValueChange={toggleTheme} />
         </View>
       </View>
@@ -75,6 +85,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 12,
     marginBottom: 30,
+    marginTop: hp(8),
   },
   avatarWrapper: {
     marginBottom: 14,

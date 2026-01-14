@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Chat from '../screens/Chat';
 import { ROUTES } from '../constants';
 import BottomNavigation from './BottomNavigation';
+import AllUsers from '../screens/AllUsers';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +23,11 @@ const MainNavigation = ({ theme, toggleTheme }) => {
 
       <Stack.Screen name={ROUTES.CHAT} options={{ headerShown: false }}>
         {props => <Chat {...props} theme={theme} toggleTheme={toggleTheme} />}
+      </Stack.Screen>
+      <Stack.Screen name={ROUTES.ALLUSERS} options={{ headerShown: false }}>
+        {props => (
+          <AllUsers {...props} theme={theme} toggleTheme={toggleTheme} />
+        )}
       </Stack.Screen>
     </Stack.Navigator>
   );

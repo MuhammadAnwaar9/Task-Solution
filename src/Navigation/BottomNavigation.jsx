@@ -1,4 +1,4 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ChatScreen from '../screens/ChatScreen';
@@ -37,7 +37,8 @@ const BottomNavigation = ({ theme, toggleTheme }) => {
         },
         tabBarActiveTintColor: isDark ? '#FFD700' : '#007AFF',
         tabBarInactiveTintColor: isDark ? '#777' : '#999',
-        tabBarIcon: ({ color, size, focused }) => {
+        // eslint-disable-next-line react/no-unstable-nested-components
+        tabBarIcon: ({ color }) => {
           let iconName;
           if (route.name === ROUTES.CHATSCREEN) {
             iconName = 'wechat';
@@ -48,19 +49,13 @@ const BottomNavigation = ({ theme, toggleTheme }) => {
         },
       })}
     >
-      <Tab.Screen
-        name={ROUTES.CHATSCREEN}
-        options={{ tabBarLabel: 'Chat' }}
-      >
+      <Tab.Screen name={ROUTES.CHATSCREEN} options={{ tabBarLabel: 'Chat' }}>
         {props => (
           <ChatScreen {...props} theme={theme} toggleTheme={toggleTheme} />
         )}
       </Tab.Screen>
 
-      <Tab.Screen
-        name={ROUTES.PROFILES}
-        options={{ tabBarLabel: 'Profile' }}
-      >
+      <Tab.Screen name={ROUTES.PROFILES} options={{ tabBarLabel: 'Profile' }}>
         {props => (
           <ProfileScreen {...props} theme={theme} toggleTheme={toggleTheme} />
         )}

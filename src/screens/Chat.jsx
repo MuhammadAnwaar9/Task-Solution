@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
@@ -16,7 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import eventBus from '../utils/eventBus';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserData } from '../redux/slice/appSettingsSlice';
-
+import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
 if (
   Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -35,11 +36,11 @@ const lightColors = {
 };
 
 const darkColors = {
-  background: '#121212',
+  background: '#22314D',
   card: '#1E1E1E',
   text: '#fff',
   secondaryText: '#aaa',
-  bubbleMe: '#4A90E2',
+  bubbleMe: '#4075b1',
   bubbleOther: '#333',
   inputBg: '#1c1c1c',
 };
@@ -51,7 +52,7 @@ const Chat = ({ route, theme, toggleTheme }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
 
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline] = useState(true);
   const dispatch = useDispatch();
 
   const colors = theme === 'dark' ? darkColors : lightColors;
@@ -80,7 +81,7 @@ const Chat = ({ route, theme, toggleTheme }) => {
     };
 
     loadMessages();
-  }, []);
+  }, [STORAGE_KEY]);
 
   const saveMessages = async updatedMessages => {
     try {
@@ -138,9 +139,9 @@ const Chat = ({ route, theme, toggleTheme }) => {
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={90}
+      keyboardVerticalOffset={50}
     >
-      <View style={[styles.header, { backgroundColor: colors.card }]}>
+      <View style={[styles.header]}>
         <Image source={chat?.avatar} style={styles.avatar} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.headerText, { color: colors.text }]}>
@@ -175,6 +176,7 @@ const Chat = ({ route, theme, toggleTheme }) => {
             <View
               style={[
                 styles.messageBubble,
+
                 {
                   backgroundColor: isMe ? colors.bubbleMe : colors.bubbleOther,
                   alignSelf: isMe ? 'flex-end' : 'flex-start',
@@ -237,6 +239,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowRadius: 3,
     elevation: 2,
+    marginTop: hp(4),
   },
   avatar: {
     width: 48,
